@@ -226,7 +226,81 @@ window.addEventListener('load', () => {
   }, 1500); // time before fade starts
 });
 
+// === GPT + VOICE SYSTEM ===
+
+// Replace with your OpenAI API key when exporting as APK or hosting
+const OPENAI_KEY = "YOUR_OPENAI_API_KEY_HERE";
+
+// Speech Synthesis (Talking)
+function speak(text) {
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.pitch = 1;
+  utter.rate = 1;
+  utter.onstart = () => mouth.classList.add("talking");
+  utter.onend = () => mouth.classList.remove("talking");
+  speechSynthesis.speak(utter);
+}
+
+// Speech Recognition (Listening)
+let recognition;
+if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+  recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = "en-US";
+  recognition.continuous = false;
+}
+
+async function askGPT(prompt) {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${OPENAI_KEY}`
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }]
+    })
+  });
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || "I didn't understand that.";
+}
+
+// Voice Button
+const mouth = document.getElementById("mouth");
+const faceElement = document.getElementById("face");
+
+// Click mouth to talk
+mouth.addEventListener("click", () => {
+  if (!recognition) return;
+  setEmotion("surprised");
+  recognition.start();
+});
+
+// What happens when user speaks
+if (recognition) {
+  recognition.onresult = async (event) => {
+    const userSpeech = event.results[0][0].transcript;
+
+    // temporary reaction
+    setEmotion("surprised");
+
+    const reply = await askGPT(userSpeech);
+
+    // Emotion detection from reply
+    let lower = reply.toLowerCase();
+    if (lower.includes("happy") || lower.includes("great") || lower.includes("awesome")) setEmotion("happy");
+    else if (lower.includes("sad") || lower.includes("sorry") || lower.includes("bad")) setEmotion("sad");
+    else if (lower.includes("love") || lower.includes("❤")) setEmotion("love");
+    else if (lower.includes("angry") || lower.includes("mad")) setEmotion("angry");
+    else setEmotion("neutral");
+
+    speak(reply);
+  };
+}
+
 </script>
 </body>
 </html>
+
 
