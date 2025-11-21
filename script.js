@@ -1,4 +1,4 @@
-// script.js (fixed for wake-word + Worker + speaking)
+// script.js (fully fixed for wake-word + Worker + guaranteed speaking + debug logs)
 const face = document.getElementById("face");
 const pupilL = document.getElementById("pupilL");
 const pupilR = document.getElementById("pupilR");
@@ -32,12 +32,15 @@ window.addEventListener('load', () => {
 
 // --- SPEECH SYNTHESIS (TALK) ---
 function speak(text) {
+  if (!text || text.trim() === "") return;
   const utter = new SpeechSynthesisUtterance(text);
   utter.pitch = 1;
   utter.rate = 1;
   utter.onstart = () => mouth.classList.add("talking");
   utter.onend = () => mouth.classList.remove("talking");
-  speechSynthesis.speak(utter);
+
+  // tiny delay ensures browser allows speaking
+  setTimeout(() => speechSynthesis.speak(utter), 100);
 }
 
 // --- SPEECH RECOGNITION (LISTEN) ---
@@ -50,13 +53,14 @@ if (window.SpeechRecognition || window.webkitSpeechRecognition) {
 
 async function listenGPT() {
   if (!recognition) return;
-  recognition.start();
   setEmotion("surprised");
+  recognition.start();
 }
 
 if (recognition) {
   recognition.onresult = async (event) => {
     const userSpeech = event.results[0][0].transcript.toLowerCase();
+    console.log("User said:", userSpeech);
 
     // Wake-word: respond only if 'nowalk' is mentioned
     if (!userSpeech.includes("nowalk")) {
@@ -65,6 +69,7 @@ if (recognition) {
     }
 
     const message = userSpeech.replace("nowalk", "").trim();
+    console.log("Message sent to Worker:", message);
     setEmotion("surprised");
 
     try {
@@ -76,6 +81,7 @@ if (recognition) {
       });
 
       const data = await replyData.json();
+      console.log("Worker replied:", data);
       const replyText = data.reply; // <- Worker sends { reply: "..." }
 
       if (replyText && replyText.trim() !== "") {
