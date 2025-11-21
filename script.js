@@ -60,7 +60,7 @@ if (recognition) {
     setEmotion("surprised");
 
     // Send to Cloudflare Worker
-    const replyData = await fetch("https://YOUR-WORKER-NAME.YOUR-ACCOUNT.workers.dev", {
+    const replyData = await fetch("https://bloopbot-api.ethanoka94.workers.dev/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: userSpeech })
