@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>FaceBot v4</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #030b18;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      font-family: sans-serif;
+    }
+
+    #face {
+      width: 80vmin;
+      height: 80vmin;
+      border-radius: 50%;
+      background: #0d1b2a;
+      position: relative;
+      box-shadow: 0 0 40px #00b7ff;
+      transition: 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .eye {
+      width: 18vmin;
+      height: 18vmin;
+      background: #00d5ff;
+      border-radius: 50%;
+      position: absolute;
+      top: 25%;
+      transition: 0.2s;
+    }
+
+    #eyeL { left: 20%; }
+    #eyeR { right: 20%; }
+
+    /* PUPILS FOR EYE TRACKING */
+    .pupil {
+      width: 7vmin;
+      height: 7vmin;
+      background: black;
+      border-radius: 50%;
+      position: absolute;
+      top: 35%;
+      transition: 0.1s linear;
+    }
+    #pupilL { left: 25%; }
+    #pupilR { right: 25%; }
+
+    /* EYEBROWS */
+    .brow {
+      width: 20vmin;
+      height: 3vmin;
+      background: #00aaff;
+      border-radius: 2vmin;
+      position: absolute;
+      top: 18%;
+      transition: 0.25s ease;
+    }
+    #browL { left: 10%; transform: rotate(10deg); }
+    #browR { right: 10%; transform: rotate(-10deg); }
+
+    #mouth {
+      width: 28vmin;
+      height: 10vmin;
+      background: #0099ff;
+      border-radius: 0 0 40vmin 40vmin;
+      position: absolute;
+      bottom: 20%;
+      transition: 0.2s;
+    }
+
+    .talking {
+      height: 18vmin !important;
+      background: #00c4ff !important;
+    }
+
+    /* ---------------- EMOTIONS --------------- */
+
+    /* HAPPY */
+    .happy .eye {
+      background: #00fff0;
+      transform: scale(1.2);
+    }
+    .happy #mouth {
+      height: 14vmin;
+      background: #00cfff;
+    }
+    .happy #browL { transform: rotate(0deg) translateY(-1vmin); }
+    .happy #browR { transform: rotate(0deg) translateY(-1vmin); }
+
+    /* SURPRISED */
+    .surprised .eye {
+      background: #9be6ff;
+      transform: scale(1.4);
+    }
+    .surprised #mouth {
+      width: 20vmin;
+      height: 20vmin;
+      border-radius: 50%;
+    }
+    .surprised #browL { transform: rotate(0deg) translateY(-3vmin); }
+    .surprised #browR { transform: rotate(0deg) translateY(-3vmin); }
+
+    /* SAD */
+    .sad .eye {
+      background: #0088aa;
+      transform: scale(0.8) translateY(2vmin);
+    }
+    .sad #mouth {
+      transform: rotate(180deg);
+      height: 6vmin;
+    }
+    .sad #browL { transform: rotate(20deg) translateY(2vmin); }
+    .sad #browR { transform: rotate(-20deg) translateY(2vmin); }
+
+    /* ANGRY */
+    .angry .eye {
+      background: #ff3636;
+      transform: scale(1);
+    }
+    .angry #browL {
+      transform: rotate(-25deg) translateY(1vmin);
+      background: #ff0000;
+    }
+    .angry #browR {
+      transform: rotate(25deg) translateY(1vmin);
+      background: #ff0000;
+    }
+    .angry #mouth {
+      height: 5vmin;
+      width: 22vmin;
+      background: #ff2222;
+    }
+
+    /* HEART EYES */
+    .love .eye {
+      background: transparent;
+      box-shadow: none;
+    }
+    .love #eyeL::before,
+    .love #eyeR::before {
+      content: "❤";
+      color: red;
+      font-size: 12vmin;
+      position: absolute;
+      top: -2vmin;
+      left: 2vmin;
+    }
+    .love #mouth {
+      height: 16vmin;
+      background: #ff77d3;
+    }
+
+    /* BUTTONS */
+    #controls {
+      position: absolute;
+      bottom: 5%;
+      display: flex;
+      gap: 1vmin;
+    }
+    #controls button {
+      padding: 1vmin 3vmin;
+      font-size: 3vmin;
+      border-radius: 1vmin;
+      border: none;
+      background: #00aaff;
+      color: white;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div id="face" class="neutral">
+    <div id="browL" class="brow"></div>
+    <div id="browR" class="brow"></div>
+
+    <div id="eyeL" class="eye"></div>
+    <div id="eyeR" class="eye"></div>
+
+    <div id="pupilL" class="pupil"></div>
+    <div id="pupilR" class="pupil"></div>
+
+    <div id="mouth"></div>
+  </div>
+
+  <div id="controls">
+    <button onclick="setEmotion('happy')">😊</button>
+    <button onclick="setEmotion('surprised')">😮</button>
+    <button onclick="setEmotion('sad')">😢</button>
+    <button onclick="setEmotion('angry')">😡</button>
+    <button onclick="setEmotion('love')">❤️</button>
+    <button onclick="setEmotion('neutral')">😐</button>
+  </div>
+
+  <script>
+    const face = document.getElementById("face");
+    const mouth = document.getElementById("mouth");
+
+    function setEmotion(type) {
+      face.classList.remove("happy", "sad", "surprised", "angry", "love", "neutral");
+      face.classList.add(type);
+    }
+
+    /* ------------------- EYE TRACKING ------------------- */
+    const faceBox = document.getElementById("face");
+    const pupilL = document.getElementById("pupilL");
+    const pupilR = document.getElementById("pupilR");
+
+    document.addEventListener("mousemove", (e) => {
+      let rect = faceBox.getBoundingClientRect();
+      let x = e.clientX - (rect.left + rect.width / 2);
+      let y = e.clientY - (rect.top + rect.height / 2);
+
+      const limit = 6; // max movement
+      let px = Math.max(-limit, Math.min(limit, x / 25));
+      let py = Math.max(-limit, Math.min(limit, y / 25));
+
+      pupilL.style.transform = `translate(${px}px, ${py}px)`;
+      pupilR.style.transform = `translate(${px}px, ${py}px)`;
+    });
+
+    /* ----------- MOUTH TALKING HANDLED BY EXISTING SPEECH CODE ----------- */
+  </script>
+
+</body>
+</html>
