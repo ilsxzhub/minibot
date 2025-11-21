@@ -1,4 +1,4 @@
-// script.js
+// script.js (updated for NoWalk wake-word and your Worker URL)
 const face = document.getElementById("face");
 const pupilL = document.getElementById("pupilL");
 const pupilR = document.getElementById("pupilR");
@@ -56,20 +56,28 @@ async function listenGPT() {
 
 if (recognition) {
   recognition.onresult = async (event) => {
-    const userSpeech = event.results[0][0].transcript;
+    const userSpeech = event.results[0][0].transcript.toLowerCase();
+
+    // Wake-word: respond only if 'nowalk' is mentioned
+    if (!userSpeech.includes("nowalk")) {
+      setEmotion("neutral");
+      return;
+    }
+
+    const message = userSpeech.replace("nowalk", "").trim();
     setEmotion("surprised");
 
-    // Send to Cloudflare Worker
+    // Send to your Cloudflare Worker
     const replyData = await fetch("https://bloopbot-api.ethanoka94.workers.dev/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userSpeech })
+      body: JSON.stringify({ message })
     });
 
     const data = await replyData.json();
     const replyText = data.choices[0].message.content;
 
-    // Simple emotion detection
+    // Simple emotion detection from reply
     let lower = replyText.toLowerCase();
     if (lower.includes("happy") || lower.includes("great") || lower.includes("awesome")) setEmotion("happy");
     else if (lower.includes("sad") || lower.includes("sorry") || lower.includes("bad")) setEmotion("sad");
