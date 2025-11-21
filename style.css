@@ -1,0 +1,76 @@
+/* style.css */
+body {
+  margin: 0;
+  background: #030b18;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  font-family: sans-serif;
+}
+
+#faceContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2vmin;
+}
+
+#face {
+  width: 80vmin;
+  height: 80vmin;
+  border-radius: 50%;
+  background: #0d1b2a;
+  position: relative;
+  box-shadow: 0 0 40px #00b7ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: breathe 6s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.eye { width: 18vmin; height: 18vmin; background: #00d5ff; border-radius: 50%; position: absolute; top: 25%; transition: 0.2s; }
+#eyeL { left: 20%; } #eyeR { right: 20%; }
+.pupil { width: 7vmin; height: 7vmin; background: black; border-radius: 50%; position: absolute; top: 35%; transition: 0.1s linear; }
+#pupilL { left: 25%; } #pupilR { right: 25%; }
+.brow { width: 20vmin; height: 3vmin; background: #00aaff; border-radius: 2vmin; position: absolute; top: 18%; transition: 0.25s ease; }
+#browL { left: 10%; transform: rotate(10deg); } #browR { right: 10%; transform: rotate(-10deg); }
+#mouth { width: 28vmin; height: 10vmin; background: #0099ff; border-radius: 0 0 40vmin 40vmin; position: absolute; bottom: 20%; transition: 0.2s; }
+.talking { height: 18vmin !important; background: #00c4ff !important; }
+
+/* --- EMOTIONS --- */
+.happy .eye { background: #00fff0; transform: scale(1.2); }
+.happy #mouth { height: 14vmin; background: #00cfff; }
+.happy #browL, .happy #browR { transform: rotate(0deg) translateY(-1vmin); }
+.surprised .eye { background: #9be6ff; transform: scale(1.4); }
+.surprised #mouth { width: 20vmin; height: 20vmin; border-radius: 50%; }
+.surprised #browL, .surprised #browR { transform: rotate(0deg) translateY(-3vmin); }
+.sad .eye { background: #0088aa; transform: scale(0.8) translateY(2vmin); }
+.sad #mouth { transform: rotate(180deg); height: 6vmin; }
+.sad #browL { transform: rotate(20deg) translateY(2vmin); }
+.sad #browR { transform: rotate(-20deg) translateY(2vmin); }
+.angry .eye { background: #ff3636; }
+.angry #browL { transform: rotate(-25deg) translateY(1vmin); background: #ff0000; }
+.angry #browR { transform: rotate(25deg) translateY(1vmin); background: #ff0000; }
+.angry #mouth { height: 5vmin; width: 22vmin; background: #ff2222; }
+.love .eye { background: transparent; }
+.love #eyeL::before, .love #eyeR::before { content: "❤"; color: red; font-size: 12vmin; position: absolute; top: -2vmin; left: 2vmin; }
+.love #mouth { height: 16vmin; background: #ff77d3; }
+.sleep .eye { transform: scaleY(0.1); background: #003344; }
+.sleep #mouth { height: 4vmin; background: #004466; }
+.sleep #browL, .sleep #browR { opacity: 0; }
+
+#controls { display: flex; gap: 1vmin; justify-content: center; }
+#controls button { padding: 1vmin 3vmin; font-size: 3vmin; border-radius: 1vmin; border: none; background: #00aaff; color: white; cursor: pointer; }
+
+/* Startup fade-out */
+#startup-screen.fade-out { opacity: 0; transition: opacity 1s ease-out; }
