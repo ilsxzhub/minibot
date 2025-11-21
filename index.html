@@ -2,8 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>FaceBot v4</title>
-
+  <title>BROBOTS - BloopBot v5 NoWalk/title>
   <style>
     body {
       margin: 0;
@@ -18,6 +17,13 @@
       font-family: sans-serif;
     }
 
+    #faceContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2vmin;
+    }
+
     #face {
       width: 80vmin;
       height: 80vmin;
@@ -29,6 +35,13 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      animation: breathe 6s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
     }
 
     .eye {
@@ -44,7 +57,6 @@
     #eyeL { left: 20%; }
     #eyeR { right: 20%; }
 
-    /* PUPILS FOR EYE TRACKING */
     .pupil {
       width: 7vmin;
       height: 7vmin;
@@ -54,10 +66,10 @@
       top: 35%;
       transition: 0.1s linear;
     }
+
     #pupilL { left: 25%; }
     #pupilR { right: 25%; }
 
-    /* EYEBROWS */
     .brow {
       width: 20vmin;
       height: 3vmin;
@@ -67,6 +79,7 @@
       top: 18%;
       transition: 0.25s ease;
     }
+
     #browL { left: 10%; transform: rotate(10deg); }
     #browR { right: 10%; transform: rotate(-10deg); }
 
@@ -85,71 +98,32 @@
       background: #00c4ff !important;
     }
 
-    /* ---------------- EMOTIONS --------------- */
+    /* --- EMOTIONS --- */
 
-    /* HAPPY */
-    .happy .eye {
-      background: #00fff0;
-      transform: scale(1.2);
-    }
-    .happy #mouth {
-      height: 14vmin;
-      background: #00cfff;
-    }
-    .happy #browL { transform: rotate(0deg) translateY(-1vmin); }
-    .happy #browR { transform: rotate(0deg) translateY(-1vmin); }
+    .happy .eye { background: #00fff0; transform: scale(1.2); }
+    .happy #mouth { height: 14vmin; background: #00cfff; }
+    .happy #browL, .happy #browR { transform: rotate(0deg) translateY(-1vmin); }
 
-    /* SURPRISED */
-    .surprised .eye {
-      background: #9be6ff;
-      transform: scale(1.4);
-    }
+    .surprised .eye { background: #9be6ff; transform: scale(1.4); }
     .surprised #mouth {
       width: 20vmin;
       height: 20vmin;
       border-radius: 50%;
     }
-    .surprised #browL { transform: rotate(0deg) translateY(-3vmin); }
-    .surprised #browR { transform: rotate(0deg) translateY(-3vmin); }
+    .surprised #browL, .surprised #browR { transform: rotate(0deg) translateY(-3vmin); }
 
-    /* SAD */
-    .sad .eye {
-      background: #0088aa;
-      transform: scale(0.8) translateY(2vmin);
-    }
-    .sad #mouth {
-      transform: rotate(180deg);
-      height: 6vmin;
-    }
+    .sad .eye { background: #0088aa; transform: scale(0.8) translateY(2vmin); }
+    .sad #mouth { transform: rotate(180deg); height: 6vmin; }
     .sad #browL { transform: rotate(20deg) translateY(2vmin); }
     .sad #browR { transform: rotate(-20deg) translateY(2vmin); }
 
-    /* ANGRY */
-    .angry .eye {
-      background: #ff3636;
-      transform: scale(1);
-    }
-    .angry #browL {
-      transform: rotate(-25deg) translateY(1vmin);
-      background: #ff0000;
-    }
-    .angry #browR {
-      transform: rotate(25deg) translateY(1vmin);
-      background: #ff0000;
-    }
-    .angry #mouth {
-      height: 5vmin;
-      width: 22vmin;
-      background: #ff2222;
-    }
+    .angry .eye { background: #ff3636; }
+    .angry #browL { transform: rotate(-25deg) translateY(1vmin); background: #ff0000; }
+    .angry #browR { transform: rotate(25deg) translateY(1vmin); background: #ff0000; }
+    .angry #mouth { height: 5vmin; width: 22vmin; background: #ff2222; }
 
-    /* HEART EYES */
-    .love .eye {
-      background: transparent;
-      box-shadow: none;
-    }
-    .love #eyeL::before,
-    .love #eyeR::before {
+    .love .eye { background: transparent; }
+    .love #eyeL::before, .love #eyeR::before {
       content: "❤";
       color: red;
       font-size: 12vmin;
@@ -157,18 +131,19 @@
       top: -2vmin;
       left: 2vmin;
     }
-    .love #mouth {
-      height: 16vmin;
-      background: #ff77d3;
-    }
+    .love #mouth { height: 16vmin; background: #ff77d3; }
 
-    /* BUTTONS */
+    /* Sleeping */
+    .sleep .eye { transform: scaleY(0.1); background: #003344; }
+    .sleep #mouth { height: 4vmin; background: #004466; }
+    .sleep #browL, .sleep #browR { opacity: 0; }
+
     #controls {
-      position: absolute;
-      bottom: 5%;
       display: flex;
       gap: 1vmin;
+      justify-content: center;
     }
+
     #controls button {
       padding: 1vmin 3vmin;
       font-size: 3vmin;
@@ -182,48 +157,49 @@
 </head>
 <body>
 
-  <div id="face" class="neutral">
-    <div id="browL" class="brow"></div>
-    <div id="browR" class="brow"></div>
+  <div id="faceContainer">
+    <div id="face" class="neutral">
+      <div id="browL" class="brow"></div>
+      <div id="browR" class="brow"></div>
 
-    <div id="eyeL" class="eye"></div>
-    <div id="eyeR" class="eye"></div>
+      <div id="eyeL" class="eye"></div>
+      <div id="eyeR" class="eye"></div>
 
-    <div id="pupilL" class="pupil"></div>
-    <div id="pupilR" class="pupil"></div>
+      <div id="pupilL" class="pupil"></div>
+      <div id="pupilR" class="pupil"></div>
 
-    <div id="mouth"></div>
-  </div>
+      <div id="mouth"></div>
+    </div>
 
-  <div id="controls">
-    <button onclick="setEmotion('happy')">😊</button>
-    <button onclick="setEmotion('surprised')">😮</button>
-    <button onclick="setEmotion('sad')">😢</button>
-    <button onclick="setEmotion('angry')">😡</button>
-    <button onclick="setEmotion('love')">❤️</button>
-    <button onclick="setEmotion('neutral')">😐</button>
+    <div id="controls">
+      <button onclick="setEmotion('happy')">😊</button>
+      <button onclick="setEmotion('surprised')">😮</button>
+      <button onclick="setEmotion('sad')">😢</button>
+      <button onclick="setEmotion('angry')">😡</button>
+      <button onclick="setEmotion('love')">❤️</button>
+      <button onclick="setEmotion('sleep')">😴</button>
+      <button onclick="setEmotion('neutral')">😐</button>
+    </div>
   </div>
 
   <script>
     const face = document.getElementById("face");
-    const mouth = document.getElementById("mouth");
 
     function setEmotion(type) {
-      face.classList.remove("happy", "sad", "surprised", "angry", "love", "neutral");
-      face.classList.add(type);
+      face.className = type;
     }
 
-    /* ------------------- EYE TRACKING ------------------- */
-    const faceBox = document.getElementById("face");
+    /* Eye tracking */
     const pupilL = document.getElementById("pupilL");
     const pupilR = document.getElementById("pupilR");
+    const faceBox = document.getElementById("face");
 
     document.addEventListener("mousemove", (e) => {
       let rect = faceBox.getBoundingClientRect();
       let x = e.clientX - (rect.left + rect.width / 2);
       let y = e.clientY - (rect.top + rect.height / 2);
 
-      const limit = 6; // max movement
+      const limit = 6;
       let px = Math.max(-limit, Math.min(limit, x / 25));
       let py = Math.max(-limit, Math.min(limit, y / 25));
 
@@ -231,8 +207,6 @@
       pupilR.style.transform = `translate(${px}px, ${py}px)`;
     });
 
-    /* ----------- MOUTH TALKING HANDLED BY EXISTING SPEECH CODE ----------- */
   </script>
-
 </body>
 </html>
