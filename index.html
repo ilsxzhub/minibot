@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>BROBOTS - BloopBot v5 NoWalk/title>
+  <title>BROBOTS - BloopBot v5 NoWalk</title>
   <style>
     body {
       margin: 0;
@@ -153,9 +153,19 @@
       color: white;
     }
 
-  </style>
+  
+/* Startup fade-out */
+#startup-screen.fade-out {
+  opacity: 0;
+  transition: opacity 1s ease-out;
+}
+</style>
 </head>
 <body>
+  <!-- Startup Animation Screen -->
+  <div id="startup-screen" class="fixed inset-0 flex items-center justify-center bg-black text-white text-4xl font-bold" style="z-index:9999;">
+    BOOTING BLOOPBOT...
+  </div>
 
   <div id="faceContainer">
     <div id="face" class="neutral">
@@ -207,6 +217,16 @@
       pupilR.style.transform = `translate(${px}px, ${py}px)`;
     });
 
-  </script>
+  // Startup Animation
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const scr = document.getElementById('startup-screen');
+    scr.classList.add('fade-out');
+    setTimeout(() => scr.remove(), 1200);
+  }, 1500); // time before fade starts
+});
+
+</script>
 </body>
 </html>
+
