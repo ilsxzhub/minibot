@@ -1,4 +1,4 @@
-// script.js (fully fixed for wake-word + Worker + guaranteed speaking + debug logs)
+// script.js (wake-word + Worker + guaranteed speaking + visual cue)
 const face = document.getElementById("face");
 const pupilL = document.getElementById("pupilL");
 const pupilR = document.getElementById("pupilR");
@@ -7,6 +7,15 @@ const mouth = document.getElementById("mouth");
 // --- EMOTIONS ---
 function setEmotion(type) {
   face.className = type;
+}
+
+// --- VISUAL CUE: glow when listening ---
+function showListeningCue(active) {
+  if (active) {
+    face.style.boxShadow = "0 0 50px #00ffea";
+  } else {
+    face.style.boxShadow = "0 0 40px #00b7ff";
+  }
 }
 
 // --- EYE TRACKING ---
@@ -38,8 +47,6 @@ function speak(text) {
   utter.rate = 1;
   utter.onstart = () => mouth.classList.add("talking");
   utter.onend = () => mouth.classList.remove("talking");
-
-  // tiny delay ensures browser allows speaking
   setTimeout(() => speechSynthesis.speak(utter), 100);
 }
 
@@ -54,15 +61,18 @@ if (window.SpeechRecognition || window.webkitSpeechRecognition) {
 async function listenGPT() {
   if (!recognition) return;
   setEmotion("surprised");
+  showListeningCue(true);
   recognition.start();
 }
 
 if (recognition) {
+  recognition.onstart = () => showListeningCue(true);
+  recognition.onend = () => showListeningCue(false);
+
   recognition.onresult = async (event) => {
     const userSpeech = event.results[0][0].transcript.toLowerCase();
     console.log("User said:", userSpeech);
 
-    // Wake-word: respond only if 'nowalk' is mentioned
     if (!userSpeech.includes("nowalk")) {
       setEmotion("neutral");
       return;
@@ -73,7 +83,6 @@ if (recognition) {
     setEmotion("surprised");
 
     try {
-      // Send to Cloudflare Worker
       const replyData = await fetch("https://bloopbot-api.ethanoka94.workers.dev/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,10 +91,9 @@ if (recognition) {
 
       const data = await replyData.json();
       console.log("Worker replied:", data);
-      const replyText = data.reply; // <- Worker sends { reply: "..." }
+      const replyText = data.reply;
 
       if (replyText && replyText.trim() !== "") {
-        // Simple emotion detection from reply
         let lower = replyText.toLowerCase();
         if (lower.includes("happy") || lower.includes("great") || lower.includes("awesome")) setEmotion("happy");
         else if (lower.includes("sad") || lower.includes("sorry") || lower.includes("bad")) setEmotion("sad");
@@ -93,7 +101,7 @@ if (recognition) {
         else if (lower.includes("angry") || lower.includes("mad")) setEmotion("angry");
         else setEmotion("neutral");
 
-        speak(replyText); // Bloop speaks the reply
+        speak(replyText);
       } else {
         setEmotion("neutral");
       }
@@ -107,6 +115,6 @@ if (recognition) {
   recognition.onerror = (event) => {
     console.error("Recognition error:", event.error);
     setEmotion("neutral");
+    showListeningCue(false);
   };
 }
-
