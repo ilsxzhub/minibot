@@ -60,22 +60,23 @@ if (recognition) {
 
     // Wake-word: respond only if 'nowalk' is mentioned
     if (!userSpeech.includes("nowalk")) {
-      setEmotion("neutral");
+      setEmotion("neutral")
       return;
     }
 
     const message = userSpeech.replace("nowalk", "").trim();
     setEmotion("surprised");
 
-    // Send to your Cloudflare Worker
-    const replyData = await fetch("https://bloopbot-api.ethanoka94.workers.dev/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
-    });
+const replyData = await fetch("https://bloopbot-api.ethanoka94.workers.dev/", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ message })
+});
 
-    const data = await replyData.json();
-    const replyText = data.choices[0].message.content;
+const data = await replyData.json();
+// Cloudflare Worker sends { reply: "..." }
+const replyText = data.reply;
+
 
     // Simple emotion detection from reply
     let lower = replyText.toLowerCase();
