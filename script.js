@@ -1,4 +1,4 @@
-// script.js (updated for NoWalk wake-word and your Worker URL)
+// script.js (fixed for wake-word + Worker + speaking)
 const face = document.getElementById("face");
 const pupilL = document.getElementById("pupilL");
 const pupilR = document.getElementById("pupilR");
@@ -50,8 +50,8 @@ if (window.SpeechRecognition || window.webkitSpeechRecognition) {
 
 async function listenGPT() {
   if (!recognition) return;
-  setEmotion("surprised");
   recognition.start();
+  setEmotion("surprised");
 }
 
 if (recognition) {
@@ -60,32 +60,47 @@ if (recognition) {
 
     // Wake-word: respond only if 'nowalk' is mentioned
     if (!userSpeech.includes("nowalk")) {
-      setEmotion("neutral")
+      setEmotion("neutral");
       return;
     }
 
     const message = userSpeech.replace("nowalk", "").trim();
     setEmotion("surprised");
 
-const replyData = await fetch("https://bloopbot-api.ethanoka94.workers.dev/", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ message })
-});
+    try {
+      // Send to Cloudflare Worker
+      const replyData = await fetch("https://bloopbot-api.ethanoka94.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
 
-const data = await replyData.json();
-// Cloudflare Worker sends { reply: "..." }
-const replyText = data.reply;
+      const data = await replyData.json();
+      const replyText = data.reply; // <- Worker sends { reply: "..." }
 
+      if (replyText && replyText.trim() !== "") {
+        // Simple emotion detection from reply
+        let lower = replyText.toLowerCase();
+        if (lower.includes("happy") || lower.includes("great") || lower.includes("awesome")) setEmotion("happy");
+        else if (lower.includes("sad") || lower.includes("sorry") || lower.includes("bad")) setEmotion("sad");
+        else if (lower.includes("love") || lower.includes("❤")) setEmotion("love");
+        else if (lower.includes("angry") || lower.includes("mad")) setEmotion("angry");
+        else setEmotion("neutral");
 
-    // Simple emotion detection from reply
-    let lower = replyText.toLowerCase();
-    if (lower.includes("happy") || lower.includes("great") || lower.includes("awesome")) setEmotion("happy");
-    else if (lower.includes("sad") || lower.includes("sorry") || lower.includes("bad")) setEmotion("sad");
-    else if (lower.includes("love") || lower.includes("❤")) setEmotion("love");
-    else if (lower.includes("angry") || lower.includes("mad")) setEmotion("angry");
-    else setEmotion("neutral");
+        speak(replyText); // Bloop speaks the reply
+      } else {
+        setEmotion("neutral");
+      }
+    } catch (err) {
+      console.error("Error contacting Worker:", err);
+      setEmotion("angry");
+      speak("I couldn't reach my brain.");
+    }
+  };
 
-    speak(replyText);
+  recognition.onerror = (event) => {
+    console.error("Recognition error:", event.error);
+    setEmotion("neutral");
   };
 }
+
